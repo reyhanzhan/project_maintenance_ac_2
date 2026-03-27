@@ -16,6 +16,20 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+## Default Login Accounts
+
+These credentials are created by the seed script (`npm run db:seed`) unless you override them in `.env`.
+
+### Admin
+
+- Email: `admin@ac-report.local`
+- Password: `Admin12345!`
+
+### Uploader / Technician
+
+- Email: `tech1@ac-report.local`
+- Password: `Tech12345!`
+
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
