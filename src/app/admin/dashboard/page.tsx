@@ -63,8 +63,8 @@ export default async function AdminDashboardPage() {
   ]);
 
   return (
-    <main className="flex-1 px-4 py-6 md:px-6 md:py-8">
-      <section className="mb-6 rounded-2xl bg-gradient-to-r from-slate-900 to-slate-700 p-5 text-white md:p-6">
+    <main className="flex-1 min-w-0 px-4 py-6 md:px-6 md:py-8">
+      <section className="mb-6 rounded-2xl bg-linear-to-r from-slate-900 to-slate-700 p-5 text-white md:p-6">
         <p className="text-xs font-semibold uppercase tracking-wide text-slate-200">Admin Dashboard</p>
         <h1 className="mt-2 text-2xl font-bold md:text-3xl">Ringkasan Operasional Maintenance AC</h1>
         <p className="mt-2 text-sm text-slate-200">Pantau performa tim, volume laporan, dan aktivitas terbaru di satu layar.</p>
@@ -95,7 +95,7 @@ export default async function AdminDashboardPage() {
 
       <section className="mt-6 grid gap-4 xl:grid-cols-5">
         <div className="xl:col-span-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm md:p-5">
-          <div className="mb-3 flex items-center justify-between">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
             <h2 className="text-lg font-bold text-slate-900">Laporan Terbaru</h2>
             <span className="text-xs font-semibold text-slate-500">Last {latestReports.length} entries</span>
           </div>
@@ -108,12 +108,12 @@ export default async function AdminDashboardPage() {
             <div className="space-y-2">
               {latestReports.map((report) => (
                 <div key={report.id} className="rounded-lg border border-slate-200 p-3">
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="text-sm font-semibold text-slate-900">{report.hospital.name} - {report.acUnit.name}</p>
+                  <div className="flex flex-wrap items-start justify-between gap-1.5 sm:gap-3">
+                    <p className="text-sm font-semibold text-slate-900 wrap-break-word">{report.hospital.name} - {report.acUnit.name}</p>
                     <p className="text-xs text-slate-500">{formatDateTime(report.createdAt)}</p>
                   </div>
                   <p className="mt-1 text-xs text-slate-600">Teknisi: {report.user.name}</p>
-                  {report.note ? <p className="mt-1 text-xs text-slate-500">{report.note}</p> : null}
+                  {report.note ? <p className="mt-1 text-xs text-slate-500 wrap-break-word">{report.note}</p> : null}
                 </div>
               ))}
             </div>
@@ -130,7 +130,7 @@ export default async function AdminDashboardPage() {
             ) : (
               reportsByHospital.map((hospital) => (
                 <div key={hospital.id} className="flex items-center justify-between rounded-lg border border-slate-200 p-3">
-                  <p className="text-sm font-medium text-slate-800">{hospital.name}</p>
+                  <p className="text-sm font-medium text-slate-800 wrap-break-word pr-2">{hospital.name}</p>
                   <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700">
                     {hospital._count.reports} report
                   </span>

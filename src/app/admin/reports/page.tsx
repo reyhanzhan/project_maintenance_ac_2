@@ -69,7 +69,7 @@ export default async function AdminReportsPage({ searchParams }: Props) {
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
   return (
-    <main className="flex-1 px-4 py-6 md:px-6 md:py-8">
+    <main className="flex-1 min-w-0 px-4 py-6 md:px-6 md:py-8">
       <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
@@ -112,7 +112,39 @@ export default async function AdminReportsPage({ searchParams }: Props) {
           </a>
         </form>
 
-        <div className="mt-5 overflow-x-auto">
+        <div className="mt-5 space-y-3 md:hidden">
+          {reports.length === 0 ? (
+            <p className="rounded-xl border border-dashed border-slate-300 p-4 text-sm text-slate-500">Belum ada data report.</p>
+          ) : (
+            reports.map((report) => (
+              <article key={report.id} className="rounded-xl border border-slate-200 p-3">
+                <p className="text-xs text-slate-500">{formatDateTime(report.createdAt)}</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900 wrap-break-word">
+                  {report.hospital.name} - {report.acUnit.name}
+                </p>
+                <p className="mt-1 text-xs text-slate-600 wrap-break-word">
+                  {report.user.name} ({report.user.email})
+                </p>
+                <p className="mt-2 text-xs text-slate-500 wrap-break-word">{report.note ?? "-"}</p>
+                <p className="mt-2 text-xs text-slate-600 wrap-break-word">
+                  Lokasi: {report.latitude && report.longitude
+                    ? `${report.latitude.toString()}, ${report.longitude.toString()}`
+                    : "-"}
+                </p>
+                <a
+                  href={report.photoUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-3 inline-flex rounded-md border border-slate-300 px-2.5 py-1 text-xs font-semibold text-slate-700"
+                >
+                  Preview Foto
+                </a>
+              </article>
+            ))
+          )}
+        </div>
+
+        <div className="mt-5 hidden overflow-x-auto md:block">
           <table className="min-w-full border-collapse text-sm">
             <thead>
               <tr className="border-b border-slate-200 text-left text-slate-600">

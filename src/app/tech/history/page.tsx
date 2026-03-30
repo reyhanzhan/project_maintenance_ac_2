@@ -52,7 +52,7 @@ export default async function TechnicianHistoryPage({ searchParams }: Props) {
 
   return (
     <main className="mx-auto flex w-full max-w-xl flex-1 flex-col px-4 py-4 sm:py-8">
-      <div className="mb-4 rounded-2xl bg-gradient-to-r from-emerald-700 to-teal-600 p-5 text-white">
+      <div className="mb-4 rounded-2xl bg-linear-to-r from-emerald-700 to-teal-600 p-5 text-white">
         <h1 className="text-xl font-bold">Riwayat Upload</h1>
         <p className="mt-1 text-sm text-emerald-100">20 laporan terakhir yang Anda kirim.</p>
       </div>

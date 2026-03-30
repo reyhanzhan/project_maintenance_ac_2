@@ -166,7 +166,7 @@ export default async function AdminUsersPage({ searchParams }: Props) {
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
   return (
-    <main className="flex-1 px-4 py-6 md:px-6 md:py-8">
+    <main className="flex-1 min-w-0 px-4 py-6 md:px-6 md:py-8">
       <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         {toastType && toastMessage ? <AdminToast type={toastType} message={toastMessage} /> : null}
         <div className="flex flex-wrap items-start justify-between gap-3">
@@ -212,7 +212,50 @@ export default async function AdminUsersPage({ searchParams }: Props) {
           </button>
         </form>
 
-        <div className="mt-5 overflow-x-auto">
+        <div className="mt-5 space-y-3 md:hidden">
+          {users.length === 0 ? (
+            <p className="rounded-xl border border-dashed border-slate-300 p-4 text-sm text-slate-500">
+              Tidak ada user untuk filter ini.
+            </p>
+          ) : (
+            users.map((user) => (
+              <article key={user.id} className="rounded-xl border border-slate-200 p-3">
+                <p className="text-sm font-semibold text-slate-900 wrap-break-word">{user.name}</p>
+                <p className="mt-1 text-xs text-slate-500 wrap-break-word">{user.email}</p>
+                <div className="mt-2 flex flex-wrap gap-2 text-xs text-slate-600">
+                  <span className="rounded-full bg-slate-100 px-2 py-1">{user.role}</span>
+                  <span className="rounded-full bg-slate-100 px-2 py-1">Reports: {user._count.reports}</span>
+                </div>
+
+                <form action={updateUser} className="mt-3 grid gap-2">
+                  <input type="hidden" name="id" value={user.id} />
+                  <input name="name" defaultValue={user.name} required className="rounded-md border border-slate-300 px-2.5 py-1.5" />
+                  <input name="email" defaultValue={user.email} required className="rounded-md border border-slate-300 px-2.5 py-1.5" />
+                  <select name="role" defaultValue={user.role} className="rounded-md border border-slate-300 px-2.5 py-1.5">
+                    <option value="TECHNICIAN">TECHNICIAN</option>
+                    <option value="ADMIN">ADMIN</option>
+                  </select>
+                  <input name="newPassword" type="password" placeholder="Password baru (opsional)" className="rounded-md border border-slate-300 px-2.5 py-1.5" />
+                  <button type="submit" className="rounded-md bg-slate-800 px-3 py-2 text-xs font-semibold text-white hover:bg-slate-900">
+                    Simpan
+                  </button>
+                </form>
+
+                <div className="mt-3">
+                  <ConfirmDeleteForm
+                    action={deleteUser}
+                    idValue={user.id}
+                    itemLabel={user.email}
+                    disabled={user._count.reports > 0}
+                    helperText={user._count.reports > 0 ? "Punya report" : undefined}
+                  />
+                </div>
+              </article>
+            ))
+          )}
+        </div>
+
+        <div className="mt-5 hidden overflow-x-auto md:block">
           <table className="min-w-full border-collapse text-sm">
             <thead>
               <tr className="border-b border-slate-200 text-left text-slate-600">
