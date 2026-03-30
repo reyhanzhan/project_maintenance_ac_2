@@ -108,10 +108,27 @@ async function deleteHospital(formData: FormData) {
 export default async function AdminHospitalsPage({ searchParams }: Props) {
   const params = (await searchParams) ?? {};
   const keyword = typeof params.q === "string" ? params.q.trim() : "";
+  const editRaw = typeof params.edit === "string" ? params.edit : "";
+  const editingHospitalId = editRaw ? Number(editRaw) : 0;
   const toastType = params.toast === "error" ? "error" : params.toast === "success" ? "success" : undefined;
   const toastMessage = typeof params.message === "string" ? params.message : "";
   const currentPage = Math.max(1, Number(typeof params.page === "string" ? params.page : "1") || 1);
   const pageSize = 8;
+
+  const buildEditHref = (id?: number) => {
+    const query = new URLSearchParams();
+    if (keyword) {
+      query.set("q", keyword);
+    }
+    if (currentPage > 1) {
+      query.set("page", String(currentPage));
+    }
+    if (id) {
+      query.set("edit", String(id));
+    }
+    const queryString = query.toString();
+    return queryString ? `/admin/hospitals?${queryString}` : "/admin/hospitals";
+  };
 
   const where = keyword
     ? {
@@ -189,30 +206,48 @@ export default async function AdminHospitalsPage({ searchParams }: Props) {
           ) : (
             hospitals.map((hospital) => (
               <article key={hospital.id} className="rounded-xl border border-slate-200 p-3">
+                {(() => {
+                  const isEditing = editingHospitalId === hospital.id;
+                  return (
+                    <>
                 <p className="text-sm font-semibold text-slate-900 wrap-break-word">{hospital.name}</p>
                 <p className="mt-1 text-xs text-slate-500 wrap-break-word">{hospital.address ?? "-"}</p>
                 <div className="mt-2 flex flex-wrap gap-2 text-xs text-slate-600">
                   <span className="rounded-full bg-slate-100 px-2 py-1">Units: {hospital._count.acUnits}</span>
                   <span className="rounded-full bg-slate-100 px-2 py-1">Reports: {hospital._count.reports}</span>
                 </div>
-                <form action={updateHospital} className="mt-3 grid gap-2">
+                <form id={`hospital-update-mobile-${hospital.id}`} action={updateHospital} className="mt-3 grid gap-2">
                   <input type="hidden" name="id" value={hospital.id} />
                   <input
                     name="name"
                     defaultValue={hospital.name}
                     required
-                    className="w-full rounded-md border border-slate-300 px-2.5 py-1.5"
+                    readOnly={!isEditing}
+                    className="w-full rounded-md border border-slate-300 px-2.5 py-1.5 read-only:bg-slate-50"
                   />
                   <input
                     name="address"
                     defaultValue={hospital.address ?? ""}
-                    className="w-full rounded-md border border-slate-300 px-2.5 py-1.5"
+                    readOnly={!isEditing}
+                    className="w-full rounded-md border border-slate-300 px-2.5 py-1.5 read-only:bg-slate-50"
                   />
-                  <button type="submit" className="rounded-md bg-slate-800 px-3 py-2 text-xs font-semibold text-white hover:bg-slate-900">
+                </form>
+
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <a
+                    href={isEditing ? buildEditHref() : buildEditHref(hospital.id)}
+                    className="rounded-md border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100"
+                  >
+                    {isEditing ? "Batal" : "Edit"}
+                  </a>
+                  <button
+                    type="submit"
+                    form={`hospital-update-mobile-${hospital.id}`}
+                    disabled={!isEditing}
+                    className="rounded-md bg-slate-800 px-3 py-1.5 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50 hover:bg-slate-900"
+                  >
                     Simpan
                   </button>
-                </form>
-                <div className="mt-3">
                   <ConfirmDeleteForm
                     action={deleteHospital}
                     idValue={hospital.id}
@@ -221,6 +256,9 @@ export default async function AdminHospitalsPage({ searchParams }: Props) {
                     helperText={hospital._count.reports > 0 ? "Dipakai report" : undefined}
                   />
                 </div>
+                    </>
+                  );
+                })()}
               </article>
             ))
           )}
@@ -248,34 +286,59 @@ export default async function AdminHospitalsPage({ searchParams }: Props) {
                 hospitals.map((hospital) => (
                   <tr key={hospital.id} className="border-b border-slate-100 align-top">
                     <td className="px-2 py-2" colSpan={2}>
-                      <form action={updateHospital} className="grid gap-2 md:grid-cols-[1fr_1fr_auto]">
+                      {(() => {
+                        const isEditing = editingHospitalId === hospital.id;
+                        return (
+                      <form id={`hospital-update-desktop-${hospital.id}`} action={updateHospital} className="grid gap-2 md:grid-cols-2">
                         <input type="hidden" name="id" value={hospital.id} />
                         <input
                           name="name"
                           defaultValue={hospital.name}
                           required
-                          className="w-full rounded-md border border-slate-300 px-2.5 py-1.5"
+                          readOnly={!isEditing}
+                          className="w-full rounded-md border border-slate-300 px-2.5 py-1.5 read-only:bg-slate-50"
                         />
                         <input
                           name="address"
                           defaultValue={hospital.address ?? ""}
-                          className="w-full rounded-md border border-slate-300 px-2.5 py-1.5"
+                          readOnly={!isEditing}
+                          className="w-full rounded-md border border-slate-300 px-2.5 py-1.5 read-only:bg-slate-50"
                         />
-                        <button type="submit" className="rounded-md bg-slate-800 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-900">
-                          Simpan
-                        </button>
                       </form>
+                        );
+                      })()}
                     </td>
                     <td className="px-2 py-2">{hospital._count.acUnits}</td>
                     <td className="px-2 py-2">{hospital._count.reports}</td>
                     <td className="px-2 py-2">
-                      <ConfirmDeleteForm
-                        action={deleteHospital}
-                        idValue={hospital.id}
-                        itemLabel={hospital.name}
-                        disabled={hospital._count.reports > 0}
-                        helperText={hospital._count.reports > 0 ? "Dipakai report" : undefined}
-                      />
+                      {(() => {
+                        const isEditing = editingHospitalId === hospital.id;
+                        return (
+                          <div className="flex flex-wrap gap-2">
+                            <a
+                              href={isEditing ? buildEditHref() : buildEditHref(hospital.id)}
+                              className="rounded-md border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100"
+                            >
+                              {isEditing ? "Batal" : "Edit"}
+                            </a>
+                            <button
+                              type="submit"
+                              form={`hospital-update-desktop-${hospital.id}`}
+                              disabled={!isEditing}
+                              className="rounded-md bg-slate-800 px-3 py-1.5 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50 hover:bg-slate-900"
+                            >
+                              Simpan
+                            </button>
+                            <ConfirmDeleteForm
+                              action={deleteHospital}
+                              idValue={hospital.id}
+                              itemLabel={hospital.name}
+                              disabled={hospital._count.reports > 0}
+                              helperText={hospital._count.reports > 0 ? "Dipakai report" : undefined}
+                            />
+                          </div>
+                        );
+                      })()}
                     </td>
                   </tr>
                 ))

@@ -110,10 +110,30 @@ export default async function AdminAcUnitsPage({ searchParams }: Props) {
   const keyword = typeof params.q === "string" ? params.q.trim() : "";
   const hospitalFilterRaw = typeof params.hospitalId === "string" ? params.hospitalId : "";
   const hospitalFilter = hospitalFilterRaw ? Number(hospitalFilterRaw) : undefined;
+  const editRaw = typeof params.edit === "string" ? params.edit : "";
+  const editingUnitId = editRaw ? Number(editRaw) : 0;
   const toastType = params.toast === "error" ? "error" : params.toast === "success" ? "success" : undefined;
   const toastMessage = typeof params.message === "string" ? params.message : "";
   const currentPage = Math.max(1, Number(typeof params.page === "string" ? params.page : "1") || 1);
   const pageSize = 10;
+
+  const buildEditHref = (id?: number) => {
+    const query = new URLSearchParams();
+    if (keyword) {
+      query.set("q", keyword);
+    }
+    if (hospitalFilterRaw) {
+      query.set("hospitalId", hospitalFilterRaw);
+    }
+    if (currentPage > 1) {
+      query.set("page", String(currentPage));
+    }
+    if (id) {
+      query.set("edit", String(id));
+    }
+    const queryString = query.toString();
+    return queryString ? `/admin/ac-units?${queryString}` : "/admin/ac-units";
+  };
 
   const where = {
     ...(hospitalFilter ? { hospitalId: hospitalFilter } : {}),
@@ -210,17 +230,22 @@ export default async function AdminAcUnitsPage({ searchParams }: Props) {
           ) : (
             units.map((unit) => (
               <article key={unit.id} className="rounded-xl border border-slate-200 p-3">
+                {(() => {
+                  const isEditing = editingUnitId === unit.id;
+                  return (
+                    <>
                 <p className="text-sm font-semibold text-slate-900 wrap-break-word">{unit.name}</p>
                 <p className="mt-1 text-xs text-slate-500 wrap-break-word">Hospital: {unit.hospital.name}</p>
                 <p className="mt-1 text-xs text-slate-600">Reports: {unit._count.reports}</p>
 
-                <form action={updateAcUnit} className="mt-3 grid gap-2">
+                <form id={`ac-unit-update-mobile-${unit.id}`} action={updateAcUnit} className="mt-3 grid gap-2">
                   <input type="hidden" name="id" value={unit.id} />
                   <select
                     name="hospitalId"
                     defaultValue={unit.hospitalId}
                     required
-                    className="rounded-md border border-slate-300 px-2.5 py-1.5"
+                    disabled={!isEditing}
+                    className="rounded-md border border-slate-300 px-2.5 py-1.5 disabled:bg-slate-50"
                   >
                     {hospitals.map((hospital) => (
                       <option key={hospital.id} value={hospital.id}>
@@ -228,13 +253,30 @@ export default async function AdminAcUnitsPage({ searchParams }: Props) {
                       </option>
                     ))}
                   </select>
-                  <input name="name" defaultValue={unit.name} required className="rounded-md border border-slate-300 px-2.5 py-1.5" />
-                  <button type="submit" className="rounded-md bg-slate-800 px-3 py-2 text-xs font-semibold text-white hover:bg-slate-900">
-                    Simpan
-                  </button>
+                  <input
+                    name="name"
+                    defaultValue={unit.name}
+                    required
+                    readOnly={!isEditing}
+                    className="rounded-md border border-slate-300 px-2.5 py-1.5 read-only:bg-slate-50"
+                  />
                 </form>
 
-                <div className="mt-3">
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <a
+                    href={isEditing ? buildEditHref() : buildEditHref(unit.id)}
+                    className="rounded-md border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100"
+                  >
+                    {isEditing ? "Batal" : "Edit"}
+                  </a>
+                  <button
+                    type="submit"
+                    form={`ac-unit-update-mobile-${unit.id}`}
+                    disabled={!isEditing}
+                    className="rounded-md bg-slate-800 px-3 py-1.5 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50 hover:bg-slate-900"
+                  >
+                    Simpan
+                  </button>
                   <ConfirmDeleteForm
                     action={deleteAcUnit}
                     idValue={unit.id}
@@ -243,6 +285,9 @@ export default async function AdminAcUnitsPage({ searchParams }: Props) {
                     helperText={unit._count.reports > 0 ? "Dipakai report" : undefined}
                   />
                 </div>
+                    </>
+                  );
+                })()}
               </article>
             ))
           )}
@@ -269,13 +314,17 @@ export default async function AdminAcUnitsPage({ searchParams }: Props) {
                 units.map((unit) => (
                   <tr key={unit.id} className="border-b border-slate-100">
                     <td className="px-2 py-2" colSpan={2}>
-                      <form action={updateAcUnit} className="grid gap-2 md:grid-cols-[1fr_1fr_auto]">
+                      {(() => {
+                        const isEditing = editingUnitId === unit.id;
+                        return (
+                      <form id={`ac-unit-update-desktop-${unit.id}`} action={updateAcUnit} className="grid gap-2 md:grid-cols-2">
                         <input type="hidden" name="id" value={unit.id} />
                         <select
                           name="hospitalId"
                           defaultValue={unit.hospitalId}
                           required
-                          className="rounded-md border border-slate-300 px-2.5 py-1.5"
+                          disabled={!isEditing}
+                          className="rounded-md border border-slate-300 px-2.5 py-1.5 disabled:bg-slate-50"
                         >
                           {hospitals.map((hospital) => (
                             <option key={hospital.id} value={hospital.id}>
@@ -283,21 +332,47 @@ export default async function AdminAcUnitsPage({ searchParams }: Props) {
                             </option>
                           ))}
                         </select>
-                        <input name="name" defaultValue={unit.name} required className="rounded-md border border-slate-300 px-2.5 py-1.5" />
-                        <button type="submit" className="rounded-md bg-slate-800 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-900">
-                          Simpan
-                        </button>
+                        <input
+                          name="name"
+                          defaultValue={unit.name}
+                          required
+                          readOnly={!isEditing}
+                          className="rounded-md border border-slate-300 px-2.5 py-1.5 read-only:bg-slate-50"
+                        />
                       </form>
+                        );
+                      })()}
                     </td>
                     <td className="px-2 py-2">{unit._count.reports}</td>
                     <td className="px-2 py-2">
-                      <ConfirmDeleteForm
-                        action={deleteAcUnit}
-                        idValue={unit.id}
-                        itemLabel={unit.name}
-                        disabled={unit._count.reports > 0}
-                        helperText={unit._count.reports > 0 ? "Dipakai report" : undefined}
-                      />
+                      {(() => {
+                        const isEditing = editingUnitId === unit.id;
+                        return (
+                          <div className="flex flex-wrap gap-2">
+                            <a
+                              href={isEditing ? buildEditHref() : buildEditHref(unit.id)}
+                              className="rounded-md border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100"
+                            >
+                              {isEditing ? "Batal" : "Edit"}
+                            </a>
+                            <button
+                              type="submit"
+                              form={`ac-unit-update-desktop-${unit.id}`}
+                              disabled={!isEditing}
+                              className="rounded-md bg-slate-800 px-3 py-1.5 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50 hover:bg-slate-900"
+                            >
+                              Simpan
+                            </button>
+                            <ConfirmDeleteForm
+                              action={deleteAcUnit}
+                              idValue={unit.id}
+                              itemLabel={unit.name}
+                              disabled={unit._count.reports > 0}
+                              helperText={unit._count.reports > 0 ? "Dipakai report" : undefined}
+                            />
+                          </div>
+                        );
+                      })()}
                     </td>
                   </tr>
                 ))
