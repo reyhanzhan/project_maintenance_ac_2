@@ -167,11 +167,11 @@ export default function UploadReportForm() {
           id="photo"
           type="file"
           accept="image/*"
-          capture="environment"
           onChange={handlePhotoChange}
           required
           className="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
         />
+        <p className="mt-1 text-xs text-slate-500">Anda bisa ambil foto langsung atau pilih dari galeri/file.</p>
         {photo ? <p className="mt-1 text-xs text-slate-500">{photo.name}</p> : null}
       </div>
 
